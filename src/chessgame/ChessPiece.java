@@ -1,0 +1,8 @@
+package chessgame;
+
+public enum ChessPiece {
+	
+	MY_KING, MY_QUEEN, MY_KNIGHT, MY_BISHOP, MY_ROOK, MY_PAWN,
+	ENEMY_KING, ENEMY_QUEEN, ENEMY_KNIGHT, ENEMY_BISHOP, ENEMY_ROOK, ENEMY_PAWN;
+	
+}
