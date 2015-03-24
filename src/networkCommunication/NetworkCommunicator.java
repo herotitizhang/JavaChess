@@ -3,6 +3,7 @@ package networkCommunication;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import Utilities.CountDownTimer;
 
@@ -70,12 +71,14 @@ public class NetworkCommunicator {
 		*/
 	}
 	
-	public static Socket getConnected() {
-		ServerSocket serverSocket = null;
+	public static Socket getConnected(int waitSec) {
 		Socket socket = null;
 		try {
-			serverSocket = new ServerSocket(port);
+			ServerSocket serverSocket = new ServerSocket(port);
+			serverSocket.setSoTimeout(waitSec * 1000);
 			socket = serverSocket.accept();
+		} catch (SocketTimeoutException e) {
+			System.out.println("Timed out");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -21,7 +21,7 @@ import javax.swing.border.EmptyBorder;
 
 import networkCommunication.NetworkCommunicator;
 import Utilities.CountDownTimer;
-import Utilities.IPValidator;
+import Utilities.StringUtils;
 
 
 //TODO too ugly
@@ -51,7 +51,7 @@ public class InitialPanel extends JPanel{
 				String ipAddress = JOptionPane.showInputDialog("Please enter the IP address of your opponent's machine.");
 				
 				if ((ipAddress != null) && (ipAddress.length() > 0)) { //OK button pressed and something is filled in
-					if (!IPValidator.validate(ipAddress)){
+					if (!StringUtils.validateIP(ipAddress)){
 						JOptionPane.showMessageDialog(topFrame, "Invalid IP address!");
 						return;
 					}
@@ -67,21 +67,37 @@ public class InitialPanel extends JPanel{
 						// TODO switch to the chessboard
 					}
 					
-				} else { //Cancel button was pressed or OK button pressed and nothing was filled in
-					// do nothing here for now. might change the content
-				}
+				} // else : Cancel button was pressed or OK button pressed and nothing was filled in. Do nothing
 
 			}
 			
 		});
 		
-		waiterButton = new JButton("<html>&nbsp;Wait for<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the<br> opponent</html>");
+		waiterButton = new JButton("<html>&nbsp;Wait for<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your<br> opponent</html>");
 		waiterButton.setFont(new Font("Arial", Font.BOLD,30));
 		waiterButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
+				String ipAddress = "xx.xx.xx.xx"; // TODO use a real IP
+				String secs = JOptionPane.showInputDialog("Your IP address is "+ipAddress+". Please specify how long you want to wait for incoming clients.");
+				
+				if ((secs != null)) { //OK button pressed and something is filled in
+					if (!StringUtils.isInteger(secs) ) { // the 2 last checks are for the second dialog
+						JOptionPane.showMessageDialog(topFrame, "That's not a valid number!");
+						return;
+					}
+					
+					Socket socket = NetworkCommunicator.getConnected(Integer.parseInt(secs));
+					if (socket == null) {
+						JOptionPane.showMessageDialog(topFrame, "Connection failed!");
+						return;
+					} else {
+						((GameInterface)topFrame).setSocket(socket);
+						// TODO switch to the chessboard
+					}
+				} // else: Cancel button was pressed or OK button pressed and nothing was filled in. Do nothing
+
 				
 			}
 			
