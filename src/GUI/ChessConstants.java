@@ -1,4 +1,4 @@
-package chessgame;
+package GUI;
 
 public interface ChessConstants {
 	

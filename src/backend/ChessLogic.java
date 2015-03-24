@@ -1,4 +1,4 @@
-package chessgame;
+package backend;
 
 // accepts the moves and check if they are valid (including hitting empty space)
 // implements state pattern

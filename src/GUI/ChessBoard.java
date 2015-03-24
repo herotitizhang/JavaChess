@@ -1,4 +1,4 @@
-package chessgame;
+package GUI;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -14,6 +14,9 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+
+import backend.ChessLogic;
+import backend.ChessPiece;
 
 /*
  * TODO ChessBoard should only be in charge of UI, sound effect, etc.

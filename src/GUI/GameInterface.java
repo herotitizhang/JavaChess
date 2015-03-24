@@ -1,17 +1,16 @@
-package chessgame;
+package GUI;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.net.Socket;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayer;
 import javax.swing.JPanel;
-import javax.swing.plaf.LayerUI;
 
-// TODO add the libraries physically into the folder
+
 public class GameInterface extends JFrame{
+	
+	private Socket socket;
 	
 	public GameInterface() {
 
@@ -23,16 +22,15 @@ public class GameInterface extends JFrame{
 //		this.setLayout();
 	
 		
-		this.setContentPane(new InitialPanel());
+		//TODO use cardlayout (look at tutorial)
+		
+		this.setContentPane(new InitialPanel(this));
 		
 		
 		
 		
-		// switch to a chessboard TODO to be moved to somewhere else
-		ChessBoard chessBoard = new ChessBoard();
-		JPanel chessBoardContainer = new JPanel(new BorderLayout());
-		chessBoardContainer.add(chessBoard, BorderLayout.WEST);
-		this.setContentPane(chessBoardContainer);
+		
+//		this.setContentPane(chessBoardContainer);
 		
 		
 		
@@ -45,6 +43,14 @@ public class GameInterface extends JFrame{
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		this.setResizable(false);
+	}
+	
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 	
 	public static void main(String[] args) {
