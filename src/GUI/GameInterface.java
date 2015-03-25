@@ -27,7 +27,7 @@ public class GameInterface extends JFrame{
 		this.add(mainPanel);
 		
 		launchInitialPanel();
-		
+//		launchChessBoardPanel(true);
 		
 		
 		// set up the frame

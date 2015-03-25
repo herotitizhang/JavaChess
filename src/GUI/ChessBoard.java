@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+import Utilities.IOSystem;
 import backend.ChessLogic;
 import backend.ChessPiece;
 
@@ -30,6 +31,11 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private boolean firstClick = true; // for putting a pointer
 	private int selectedRow = -1, selectedColumn = -1;
 	
+	// put the following in the memory to avoid disk access
+	private ImageIcon chessBoardImage = null;
+	private Image pointerImage = null;
+	
+	
 	// for the first click pointer icon
 //	private int selectedRow = 0, selectedColumn = 0;
 	
@@ -37,12 +43,18 @@ public class ChessBoard extends JLabel implements MouseListener{
 		super();
 		
 		// initialize chess pieces
-		board = ChessLogic.initializePieces(); 
+		board = ChessLogic.initializePieces(moveFirst); 
 		
-		// set background image
-		Image chessBoardImage = getScaledImage(ChessConstants.CLASSIC_CHESSBOARD, 
-				ChessConstants.CLASSIC_CHESSBOARD_LENGTH, ChessConstants.CLASSIC_CHESSBOARD_LENGTH);
-		this.setIcon(new ImageIcon(chessBoardImage));
+		// set chessboard imageIcon
+		chessBoardImage = new ImageIcon(IOSystem.getScaledImage(
+				ChessBoard.class.getResource(ChessConstants.CLASSIC_CHESSBOARD), 
+				ChessConstants.CLASSIC_CHESSBOARD_LENGTH, ChessConstants.CLASSIC_CHESSBOARD_LENGTH));
+		this.setIcon(chessBoardImage);
+		
+		// set pointer imageIcon
+		pointerImage = IOSystem.getScaledImage(
+				ChessBoard.class.getResource(ChessConstants.POINTER), 
+				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2);
 		
 		// add mouse listener
 		this.addMouseListener(this);
@@ -57,22 +69,23 @@ public class ChessBoard extends JLabel implements MouseListener{
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
 				if (board[row][column] == null) continue;
-				String imagePath = null;
-				if (board[row][column] == ChessPiece.ENEMY_ROOK) imagePath = ChessConstants.CLASSIC_DARK_ROOK; // TODO enemy does not have to be dark
-				else if (board[row][column] == ChessPiece.ENEMY_BISHOP) imagePath = ChessConstants.CLASSIC_DARK_BISHOP;   
-				else if (board[row][column] == ChessPiece.ENEMY_KNIGHT) imagePath = ChessConstants.CLASSIC_DARK_KNIGHT;   
-				else if (board[row][column] == ChessPiece.ENEMY_QUEEN) imagePath = ChessConstants.CLASSIC_DARK_QUEEN;   
-				else if (board[row][column] == ChessPiece.ENEMY_KING) imagePath = ChessConstants.CLASSIC_DARK_KING;   
-				else if (board[row][column] == ChessPiece.ENEMY_PAWN) imagePath = ChessConstants.CLASSIC_DARK_PAWN;   
-				else if (board[row][column] == ChessPiece.MY_ROOK) imagePath = ChessConstants.CLASSIC_LIGHT_ROOK;   
-				else if (board[row][column] == ChessPiece.MY_KNIGHT) imagePath = ChessConstants.CLASSIC_LIGHT_KNIGHT;   
-				else if (board[row][column] == ChessPiece.MY_BISHOP) imagePath = ChessConstants.CLASSIC_LIGHT_BISHOP;   
-				else if (board[row][column] == ChessPiece.MY_QUEEN) imagePath = ChessConstants.CLASSIC_LIGHT_QUEEN;   
-				else if (board[row][column] == ChessPiece.MY_KING) imagePath = ChessConstants.CLASSIC_LIGHT_KING;   
-				else if (board[row][column] == ChessPiece.MY_PAWN) imagePath = ChessConstants.CLASSIC_LIGHT_PAWN;   
+				
+//				String imagePath = null;
+//				if (board[row][column] == ChessPiece.ENEMY_ROOK) imagePath = ChessConstants.CLASSIC_DARK_ROOK; // TODO enemy does not have to be dark
+//				else if (board[row][column] == ChessPiece.ENEMY_BISHOP) imagePath = ChessConstants.CLASSIC_DARK_BISHOP;   
+//				else if (board[row][column] == ChessPiece.ENEMY_KNIGHT) imagePath = ChessConstants.CLASSIC_DARK_KNIGHT;   
+//				else if (board[row][column] == ChessPiece.ENEMY_QUEEN) imagePath = ChessConstants.CLASSIC_DARK_QUEEN;   
+//				else if (board[row][column] == ChessPiece.ENEMY_KING) imagePath = ChessConstants.CLASSIC_DARK_KING;   
+//				else if (board[row][column] == ChessPiece.ENEMY_PAWN) imagePath = ChessConstants.CLASSIC_DARK_PAWN;   
+//				else if (board[row][column] == ChessPiece.MY_ROOK) imagePath = ChessConstants.CLASSIC_LIGHT_ROOK;   
+//				else if (board[row][column] == ChessPiece.MY_KNIGHT) imagePath = ChessConstants.CLASSIC_LIGHT_KNIGHT;   
+//				else if (board[row][column] == ChessPiece.MY_BISHOP) imagePath = ChessConstants.CLASSIC_LIGHT_BISHOP;   
+//				else if (board[row][column] == ChessPiece.MY_QUEEN) imagePath = ChessConstants.CLASSIC_LIGHT_QUEEN;   
+//				else if (board[row][column] == ChessPiece.MY_KING) imagePath = ChessConstants.CLASSIC_LIGHT_KING;   
+//				else if (board[row][column] == ChessPiece.MY_PAWN) imagePath = ChessConstants.CLASSIC_LIGHT_PAWN;   
 					
 				graphics.drawImage(
-						getScaledImage(imagePath, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH), 
+						board[row][column].getImage(), 
 						(int)(ChessConstants.CLASSIC_CHESSBOARD_MARGIN+ column* ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH), 
 						(int)(ChessConstants.CLASSIC_CHESSBOARD_MARGIN+ row* ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH), 
 						null);
@@ -83,7 +96,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 		if ( firstClick && (selectedRow != -1 || selectedColumn != -1) ) {
 			System.out.println(chessPieceSelected);
 			System.out.println("draw");
-			graphics.drawImage(getScaledImage(ChessConstants.POINTER, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2), 
+			graphics.drawImage(pointerImage,
 					(int)(ChessConstants.CLASSIC_CHESSBOARD_MARGIN+ selectedColumn* ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH+ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2), 
 					(int)(ChessConstants.CLASSIC_CHESSBOARD_MARGIN+ selectedRow* ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH+ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2), 
 					null);
@@ -93,18 +106,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 	
 	
 	
-	// get a scaled Image
-	private Image getScaledImage (String path, int width, int height) {
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(new File(getClass().getResource(path).toURI()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-	}
+	
 	
 	
 	

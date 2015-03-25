@@ -1,14 +1,38 @@
 package Utilities;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
 
 
 public class IOSystem {
+	
+	/**
+	 * get a scaled image
+	 * @param path
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public static Image getScaledImage (URL path, int width, int height) {
+		BufferedImage image = null;
+		try {
+			image = ImageIO.read(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+	}
 	
 	/**
 	 * mostly close an inputstream or an outputstream
