@@ -6,11 +6,13 @@ import javax.swing.JPanel;
 
 public class ChessBoardPanel extends JPanel{
 	
-	public ChessBoardPanel() {
+	private ChessBoard chessBoard;
+	
+	public void initializePanel(boolean moveFirst) {
 		// switch to a chessboard TODO to be moved to somewhere else
-		ChessBoard chessBoard = new ChessBoard();
-		JPanel chessBoardContainer = new JPanel(new BorderLayout());
-		chessBoardContainer.add(chessBoard, BorderLayout.WEST);
+		this.setLayout(new BorderLayout());
+		chessBoard = new ChessBoard(moveFirst);
+		this.add(chessBoard, BorderLayout.WEST);
 	}
 
 }

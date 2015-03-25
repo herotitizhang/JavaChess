@@ -33,7 +33,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 	// for the first click pointer icon
 //	private int selectedRow = 0, selectedColumn = 0;
 	
-	public ChessBoard() {
+	public ChessBoard(boolean moveFirst) {
 		super();
 		
 		// initialize chess pieces

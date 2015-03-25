@@ -1,6 +1,7 @@
 package GUI;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -8,7 +9,9 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -27,14 +30,12 @@ import Utilities.StringUtils;
 //TODO too ugly
 public class InitialPanel extends JPanel{
 
-	
-	
-	JFrame topFrame;
+	GameInterface topFrame;
 	JLabel prompt;
 	JButton connectorButton, waiterButton;
 	
-	public InitialPanel(JFrame jframe) {
-		topFrame = jframe;
+	public InitialPanel(GameInterface gameInterface) {
+		topFrame = gameInterface;
 		
 		prompt = new JLabel("<html>Do you want to connect to your opponent's machine <br>or wait to be connected by your opponent?</html>");
 		prompt.setFont(new Font("Arial", Font.BOLD, 20));
@@ -61,10 +62,11 @@ public class InitialPanel extends JPanel{
 					
 					if (socket == null) {
 						JOptionPane.showMessageDialog(topFrame, "Connection failed!");
-						return;
 					} else {
-						((GameInterface)topFrame).setSocket(socket);
-						// TODO switch to the chessboard
+						topFrame.setSocket(socket);
+						topFrame.launchChessBoardPanel(false); // use black chess pieces
+						// switch to the chessboard
+						((CardLayout) (topFrame.getMainPanel().getLayout() ) ).show(topFrame.getMainPanel(), ChessConstants.CHESSBOARDPANEL);
 					}
 					
 				} // else : Cancel button was pressed or OK button pressed and nothing was filled in. Do nothing
@@ -79,7 +81,12 @@ public class InitialPanel extends JPanel{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String ipAddress = "xx.xx.xx.xx"; // TODO use a real IP
+				String ipAddress = ""; // TODO use a real IP
+				try {
+					ipAddress = InetAddress.getLocalHost().getHostAddress();
+				} catch (UnknownHostException e1) {
+					e1.printStackTrace();
+				} 
 				String secs = JOptionPane.showInputDialog("Your IP address is "+ipAddress+". Please specify how long you want to wait for incoming clients.");
 				
 				if ((secs != null)) { //OK button pressed and something is filled in
@@ -93,8 +100,12 @@ public class InitialPanel extends JPanel{
 						JOptionPane.showMessageDialog(topFrame, "Connection failed!");
 						return;
 					} else {
-						((GameInterface)topFrame).setSocket(socket);
-						// TODO switch to the chessboard
+						topFrame.setSocket(socket);
+						topFrame.launchChessBoardPanel(true);
+						// switch to the chessboard
+						((CardLayout) (topFrame.getMainPanel().getLayout() ) ).show(topFrame.getMainPanel(), ChessConstants.CHESSBOARDPANEL);
+						
+						
 					}
 				} // else: Cancel button was pressed or OK button pressed and nothing was filled in. Do nothing
 
@@ -102,7 +113,6 @@ public class InitialPanel extends JPanel{
 			}
 			
 		});
-		
 		
 		this.setLayout(new GridLayout(2,1));
 		this.add(prompt);
@@ -113,16 +123,7 @@ public class InitialPanel extends JPanel{
 
 	}
 	
-	// for testing only
-	public static void main (String[] args) {
-		JFrame jf = new JFrame();
-		jf.add(new InitialPanel(jf));
-		jf.setSize(ChessConstants.GAME_INTERFACE_WIDTH, ChessConstants.GAME_INTERFACE_HGIGHT);
-		jf.setLocation(400, 500);
-		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		jf.setVisible(true);
-		jf.setResizable(false);
-	}
+	
 	
 }
 

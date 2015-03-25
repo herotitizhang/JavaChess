@@ -11,6 +11,10 @@ public interface ChessConstants {
 	static final int CLASSIC_CHESSBOARD_MARGIN = CLASSIC_CHESSBOARD_LENGTH * 27 / 500; // includes the black border line
 	static final double CLASSIC_CHESSBOARD_GRID_WIDTH = CLASSIC_CHESSBOARD_LENGTH * 55.5 / 500;
 	
+	// for accessing main panel's card layout
+	static final String INITIALPANEL = "initialPanel";
+	static final String CHESSBOARDPANEL = "chessboardPanel";
+	
 	// for the chess pieces
 	static final String CLASSIC_DARK_PAWN = "classic_dark_pawn.png"; 
 	static final String CLASSIC_DARK_ROOK = "classic_dark_rook.png"; 

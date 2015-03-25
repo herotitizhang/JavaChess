@@ -1,5 +1,6 @@
 package GUI;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.net.Socket;
@@ -10,29 +11,22 @@ import javax.swing.JPanel;
 
 public class GameInterface extends JFrame{
 	
-	private Socket socket;
-	
-	public GameInterface() {
+	private Socket socket = null;
+	private JPanel mainPanel = null;
+	private InitialPanel initialPanel = null;
+	private ChessBoardPanel chessBoardPanel = null;
 
-//		ChessBoard chessBoard = new ChessBoard();
-//		LayerUI<JLabel> chessBoardUI = new ChessBoardUI(); // <JLabel> because ChessBoard extends JLabel
-//		JLayer<JLabel> chessBoardUILayer = new JLayer<JLabel>(chessBoard, chessBoardUI);
-//		this.add(chessBoardUILayer);
+	public GameInterface() {
 		
-//		this.setLayout();
-	
+		//  add all panels
+		mainPanel = new JPanel(new CardLayout());
+		initialPanel = new InitialPanel(this);
+		mainPanel.add(initialPanel, ChessConstants.INITIALPANEL);
+		chessBoardPanel = new ChessBoardPanel();
+		mainPanel.add(chessBoardPanel, ChessConstants.CHESSBOARDPANEL);
+		this.add(mainPanel);
 		
-		//TODO use cardlayout (look at tutorial)
-		
-		this.setContentPane(new InitialPanel(this));
-		
-		
-		
-		
-		
-//		this.setContentPane(chessBoardContainer);
-		
-		
+		launchInitialPanel();
 		
 		
 		
@@ -45,12 +39,25 @@ public class GameInterface extends JFrame{
 		this.setResizable(false);
 	}
 	
+	public void launchInitialPanel() {
+		((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.INITIALPANEL);
+	}
+	
+	public void launchChessBoardPanel(boolean moveFirst) {
+		chessBoardPanel.initializePanel(moveFirst);
+		((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.CHESSBOARDPANEL);
+	}
+	
 	public Socket getSocket() {
 		return socket;
 	}
 
 	public void setSocket(Socket socket) {
 		this.socket = socket;
+	}
+	
+	public JPanel getMainPanel() {
+		return mainPanel;
 	}
 	
 	public static void main(String[] args) {
