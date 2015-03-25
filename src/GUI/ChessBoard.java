@@ -105,11 +105,6 @@ public class ChessBoard extends JLabel implements MouseListener{
 	}
 	
 	
-	
-	
-	
-	
-	
 	//////////////////////////////////////////
 	//// Methods from MouseListener below ////
 	//////////////////////////////////////////
