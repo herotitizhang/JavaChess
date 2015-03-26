@@ -77,6 +77,7 @@ public class ChessLogic {
 		ChessPiece destination = chessBoard[toRow][toColumn];
 		if (destination != null && !destination.isEnemy()) return false;
 		
+		// check each condition
 		if (chessBoard[startRow][startColumn].getType() == ChessType.ROOK) {
 			return validateRook(chessBoard, startRow, startColumn, toRow, toColumn);
 		} else if (chessBoard[startRow][startColumn].getType() == ChessType.KNIGHT) {
@@ -86,7 +87,7 @@ public class ChessLogic {
 		} else if (chessBoard[startRow][startColumn].getType() == ChessType.PAWN) {
 			return validatePawn(chessBoard, startRow, startColumn, toRow, toColumn);
 		} else if (chessBoard[startRow][startColumn].getType() == ChessType.KING) {
-			return validateKing(chessBoard, startRow, startColumn, toRow, toColumn);
+			return validateKing(startRow, startColumn, toRow, toColumn);
 		} else if (chessBoard[startRow][startColumn].getType() == ChessType.QUEEN) {
 			return validateQueen(chessBoard, startRow, startColumn, toRow, toColumn);
 		}
@@ -134,7 +135,13 @@ public class ChessLogic {
 	}
 	
 	private static boolean validateKnight(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
-		return true;
+		
+		if (Math.abs(startRow - toRow) == 1) {
+			return Math.abs(startColumn - toColumn) == 2;
+		} else if (Math.abs(startRow - toRow) == 2) {
+			return Math.abs(startColumn - toColumn) == 1;
+		}
+		return false;
 	}
 	
 	private static boolean validateBishop(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
@@ -195,7 +202,10 @@ public class ChessLogic {
 		return true;
 	}	
 	
-	private static boolean validateKing(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+	private static boolean validateKing(int startRow, int startColumn, int toRow, int toColumn) {
+		if (Math.abs(toRow-startRow) <= 1 &&  Math.abs(toColumn-startColumn) <= 1) {
+			return true;
+		}
 		return false;
 	}
 	
