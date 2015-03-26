@@ -21,12 +21,12 @@ public class ChessLogic {
 		ChessPiece enemyQueen = new ChessPiece(ChessType.QUEEN, true, !meMoveFirst);
 		ChessPiece enemyKing = new ChessPiece(ChessType.KING, true, !meMoveFirst);
 		ChessPiece enemyPawn = new ChessPiece(ChessType.PAWN, true, !meMoveFirst);
-		ChessPiece myRook = new ChessPiece(ChessType.ROOK, true, meMoveFirst);
-		ChessPiece myKnight = new ChessPiece(ChessType.KNIGHT, true, meMoveFirst);
-		ChessPiece myBishop = new ChessPiece(ChessType.BISHOP, true, meMoveFirst);
-		ChessPiece myQueen = new ChessPiece(ChessType.QUEEN, true, meMoveFirst);
-		ChessPiece myKing = new ChessPiece(ChessType.KING, true, meMoveFirst);
-		ChessPiece myPawn = new ChessPiece(ChessType.PAWN, true, meMoveFirst);
+		ChessPiece myRook = new ChessPiece(ChessType.ROOK, false, meMoveFirst);
+		ChessPiece myKnight = new ChessPiece(ChessType.KNIGHT, false, meMoveFirst);
+		ChessPiece myBishop = new ChessPiece(ChessType.BISHOP, false, meMoveFirst);
+		ChessPiece myQueen = new ChessPiece(ChessType.QUEEN, false, meMoveFirst);
+		ChessPiece myKing = new ChessPiece(ChessType.KING, false, meMoveFirst);
+		ChessPiece myPawn = new ChessPiece(ChessType.PAWN, false, meMoveFirst);
 
 		
 		board[0][0] = enemyRook;
@@ -69,4 +69,51 @@ public class ChessLogic {
 		
 		return board;
 	}
+	
+	public static boolean validateChessPiece(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		
+		if (chessBoard[startRow][startColumn].getType() == ChessType.ROOK) {
+			return validateRook(chessBoard, startRow, startColumn, toRow, toColumn);
+		} else if (chessBoard[startRow][startColumn].getType() == ChessType.KNIGHT) {
+			return validateKnight(chessBoard, startRow, startColumn, toRow, toColumn);
+		} else if (chessBoard[startRow][startColumn].getType() == ChessType.BISHOP) {
+			return validateBishop(chessBoard, startRow, startColumn, toRow, toColumn);
+		} else if (chessBoard[startRow][startColumn].getType() == ChessType.PAWN) {
+			return validatePawn(chessBoard, startRow, startColumn, toRow, toColumn);
+		} else if (chessBoard[startRow][startColumn].getType() == ChessType.KING) {
+			return validateKing(chessBoard, startRow, startColumn, toRow, toColumn);
+		} else if (chessBoard[startRow][startColumn].getType() == ChessType.QUEEN) {
+			return validateQueen(chessBoard, startRow, startColumn, toRow, toColumn);
+		}
+		
+		System.out.println("Weird case in validateChessPiece");
+		return false;
+	}
+	
+	private static boolean validateRook(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return false;
+	}
+	
+	private static boolean validateKnight(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return false;
+	}
+	
+	private static boolean validateBishop(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return false;
+	}	
+	
+	private static boolean validatePawn(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return true;
+	}	
+	
+	private static boolean validateKing(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return false;
+	}
+	
+	private static boolean validateQueen(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		return false;
+	}	
+	
+	
+	
 }

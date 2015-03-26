@@ -27,7 +27,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private ChessPiece[][] board = null;
 	
 	// for chess piece movement
-	private boolean chessPieceSelected = false;
+	private boolean chessPieceSelected = false; // indicates if one of the player's chess pieces is selected
 	private boolean firstClick = true; // for putting a pointer
 	private int selectedRow = -1, selectedColumn = -1;
 	
@@ -60,6 +60,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 		this.addMouseListener(this);
 	}
 	
+	// invoked when repaint() is called
 	@Override
 	public void paintComponent(Graphics graphics) {
 		super.paintComponent(graphics); // draw the chess board
@@ -69,20 +70,6 @@ public class ChessBoard extends JLabel implements MouseListener{
 		for (int row = 0; row < 8; row++) {
 			for (int column = 0; column < 8; column++) {
 				if (board[row][column] == null) continue;
-				
-//				String imagePath = null;
-//				if (board[row][column] == ChessPiece.ENEMY_ROOK) imagePath = ChessConstants.CLASSIC_DARK_ROOK; // TODO enemy does not have to be dark
-//				else if (board[row][column] == ChessPiece.ENEMY_BISHOP) imagePath = ChessConstants.CLASSIC_DARK_BISHOP;   
-//				else if (board[row][column] == ChessPiece.ENEMY_KNIGHT) imagePath = ChessConstants.CLASSIC_DARK_KNIGHT;   
-//				else if (board[row][column] == ChessPiece.ENEMY_QUEEN) imagePath = ChessConstants.CLASSIC_DARK_QUEEN;   
-//				else if (board[row][column] == ChessPiece.ENEMY_KING) imagePath = ChessConstants.CLASSIC_DARK_KING;   
-//				else if (board[row][column] == ChessPiece.ENEMY_PAWN) imagePath = ChessConstants.CLASSIC_DARK_PAWN;   
-//				else if (board[row][column] == ChessPiece.MY_ROOK) imagePath = ChessConstants.CLASSIC_LIGHT_ROOK;   
-//				else if (board[row][column] == ChessPiece.MY_KNIGHT) imagePath = ChessConstants.CLASSIC_LIGHT_KNIGHT;   
-//				else if (board[row][column] == ChessPiece.MY_BISHOP) imagePath = ChessConstants.CLASSIC_LIGHT_BISHOP;   
-//				else if (board[row][column] == ChessPiece.MY_QUEEN) imagePath = ChessConstants.CLASSIC_LIGHT_QUEEN;   
-//				else if (board[row][column] == ChessPiece.MY_KING) imagePath = ChessConstants.CLASSIC_LIGHT_KING;   
-//				else if (board[row][column] == ChessPiece.MY_PAWN) imagePath = ChessConstants.CLASSIC_LIGHT_PAWN;   
 					
 				graphics.drawImage(
 						board[row][column].getImage(), 
@@ -123,17 +110,21 @@ public class ChessBoard extends JLabel implements MouseListener{
 			selectedRow = row;
 			selectedColumn = column;
 			
-			if (board[row][column] != null) {
+			// can select only the player's game pieces
+			if (board[row][column] != null  && !board[row][column].isEnemy()) {
 				chessPieceSelected = true;
-				
 			}
 		} else {
 			if (selectedRow == row && selectedColumn == column) return;
 			
 			firstClick = false;
 			chessPieceSelected = false;
-			board[row][column] = board[selectedRow][selectedColumn];
-			board[selectedRow][selectedColumn] = null;
+			
+			// make the movement
+			if (ChessLogic.validateChessPiece(board, selectedRow, selectedColumn, row, column)) {
+				board[row][column] = board[selectedRow][selectedColumn];
+				board[selectedRow][selectedColumn] = null;
+			}
 			
 		}
 		repaint();

@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 
 import networkCommunication.NetworkCommunicator;
 import Utilities.CountDownTimer;
+import Utilities.IOSystem;
 import Utilities.StringUtils;
 
 
@@ -81,8 +82,9 @@ public class InitialPanel extends JPanel{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String ipAddress = ""; // TODO use a real IP
+				String ipAddress = ""; 
 				try {
+//				ipAddress = IOSystem.getPublicIPAddress(); // TODO may need to implement a server
 					ipAddress = InetAddress.getLocalHost().getHostAddress();
 				} catch (UnknownHostException e1) {
 					e1.printStackTrace();
