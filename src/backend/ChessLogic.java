@@ -91,7 +91,45 @@ public class ChessLogic {
 	}
 	
 	private static boolean validateRook(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
-		return false;
+		// check if the rook goes straight
+		if (startRow != toRow && startColumn != toColumn) return false;
+		
+		// check if the destination is my own piece 
+		ChessPiece destination = chessBoard[toRow][toColumn];
+		if (destination != null && !destination.isEnemy()) return false;
+		
+		// check if there is any chess piece in the way
+		if (startRow == toRow) {
+			if (startColumn < toColumn) {
+				for (int i = startColumn+1; i < toColumn; i++) {
+					if (chessBoard[startRow][i] != null) {
+						return false;
+					}
+				}
+			} else {
+				for (int i = startColumn-1; i > toColumn; i--) {
+					if (chessBoard[startRow][i] != null) {
+						return false;
+					}
+				}
+			}
+		} else if (startColumn == toColumn) {
+			if (startRow < toRow) {
+				for (int i = startRow+1; i < toRow; i++) {
+					if (chessBoard[i][startColumn] != null) {
+						return false;
+					}
+				}
+			} else {
+				for (int i = startRow-1; i > toRow; i--) {
+					if (chessBoard[i][startColumn] != null) {
+						return false;
+					}
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	private static boolean validateKnight(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
