@@ -70,7 +70,12 @@ public class ChessLogic {
 		return board;
 	}
 	
+	// assume there is no out-of-bound movement
 	public static boolean validateChessPiece(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+		
+		// check if the destination is my own piece 
+		ChessPiece destination = chessBoard[toRow][toColumn];
+		if (destination != null && !destination.isEnemy()) return false;
 		
 		if (chessBoard[startRow][startColumn].getType() == ChessType.ROOK) {
 			return validateRook(chessBoard, startRow, startColumn, toRow, toColumn);
@@ -86,17 +91,13 @@ public class ChessLogic {
 			return validateQueen(chessBoard, startRow, startColumn, toRow, toColumn);
 		}
 		
-		System.out.println("Weird case in validateChessPiece");
+		System.out.println("Weird case in validateChessPiece()");
 		return false;
 	}
 	
 	private static boolean validateRook(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
 		// check if the rook goes straight
 		if (startRow != toRow && startColumn != toColumn) return false;
-		
-		// check if the destination is my own piece 
-		ChessPiece destination = chessBoard[toRow][toColumn];
-		if (destination != null && !destination.isEnemy()) return false;
 		
 		// check if there is any chess piece in the way
 		if (startRow == toRow) {
@@ -133,11 +134,61 @@ public class ChessLogic {
 	}
 	
 	private static boolean validateKnight(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
-		return false;
+		return true;
 	}
 	
 	private static boolean validateBishop(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
-		return false;
+		
+		int rowGap = Math.abs(startRow - toRow); // can be used in other places if passed the moving-diagonally test
+		
+		// check if the bishop goes diagonally
+		if (rowGap != Math.abs(startColumn - toColumn) ) {
+			return false;
+		}
+		
+		// check if there is any chess piece in the way
+		boolean forward; // determine if the movement is / or \
+		int smallerRow, smallerColumn, biggerColumn = -1;
+
+		if (startRow < toRow) {
+			smallerRow = startRow;
+			if (startColumn < toColumn) {
+				forward = false; // \ 
+				smallerColumn = startColumn;
+				biggerColumn = toColumn;
+			} else {
+				forward = true; // /
+				smallerColumn = toColumn;
+				biggerColumn = startColumn;
+			}
+		} else {
+			smallerRow = toRow;
+			if (startColumn < toColumn) {
+				forward = true; // \ 
+				smallerColumn = startColumn;
+				biggerColumn = toColumn;
+			} else {
+				forward = false; // /
+				smallerColumn = toColumn;
+				biggerColumn = startColumn;
+			}
+		}
+		
+		if (forward) {
+			for (int i = 1; i < rowGap; i++) {
+				if (chessBoard[smallerRow+i][biggerColumn-i] != null) {
+					return false;
+				}
+			}
+		} else {
+			for (int i = 1; i < rowGap; i++) {
+				if (chessBoard[smallerRow+i][smallerColumn+i] != null) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}	
 	
 	private static boolean validatePawn(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
@@ -149,7 +200,8 @@ public class ChessLogic {
 	}
 	
 	private static boolean validateQueen(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
-		return false;
+		return (validateRook(chessBoard, startRow, startColumn, toRow, toColumn) ||
+				validateBishop(chessBoard, startRow, startColumn, toRow, toColumn));
 	}	
 	
 	

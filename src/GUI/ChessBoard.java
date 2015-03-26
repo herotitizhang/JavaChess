@@ -81,7 +81,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 		
 		// draw the pointer
 		if ( firstClick && (selectedRow != -1 || selectedColumn != -1) ) {
-			System.out.println(chessPieceSelected);
+			System.out.println("A chess piece is selected: "+chessPieceSelected);
 			System.out.println("draw");
 			graphics.drawImage(pointerImage,
 					(int)(ChessConstants.CLASSIC_CHESSBOARD_MARGIN+ selectedColumn* ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH+ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2), 
@@ -101,7 +101,9 @@ public class ChessBoard extends JLabel implements MouseListener{
 		int column = (int)((e.getX() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
 		int row = (int)((e.getY() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
 		
+		
 		System.out.println(column+" "+row);
+		// goes out of bound
 		if (row < 0 || row > 7 || column < 0 || column > 7) return;
 		
 		
