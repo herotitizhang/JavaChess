@@ -35,10 +35,6 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private ImageIcon chessBoardImage = null;
 	private Image pointerImage = null;
 	
-	
-	// for the first click pointer icon
-//	private int selectedRow = 0, selectedColumn = 0;
-	
 	public ChessBoard(boolean moveFirst) {
 		super();
 		

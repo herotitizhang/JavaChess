@@ -246,11 +246,9 @@ public class ChessLogic {
 				}
 			}
 		} else { // take away an enemy piece in a diagonal direction
-			
+			return (startRow - toRow == 1 && Math.abs(toColumn - startColumn) == 1);
 		}
 		
-		
-		return true;
 	}	
 	
 	private static boolean validateKing(int startRow, int startColumn, int toRow, int toColumn) {
