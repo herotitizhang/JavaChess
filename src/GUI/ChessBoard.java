@@ -14,10 +14,12 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import Utilities.IOSystem;
 import backend.ChessLogic;
 import backend.ChessPiece;
+import backend.ChessPiece.ChessType;
 
 /*
  * TODO ChessBoard should only be in charge of UI, sound effect, etc.
@@ -109,7 +111,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 			selectedColumn = column;
 			
 			// can select only the player's game pieces
-			if (board[row][column] != null  && !board[row][column].isEnemy()) {
+			if (board[row][column] != null && !board[row][column].isEnemy()) {
 				chessPieceSelected = true;
 			}
 		} else {
@@ -118,14 +120,44 @@ public class ChessBoard extends JLabel implements MouseListener{
 			firstClick = false;
 			chessPieceSelected = false;
 			
-			// make the movement
-			if (ChessLogic.validateChessPiece(board, selectedRow, selectedColumn, row, column)) {
-				board[row][column] = board[selectedRow][selectedColumn];
-				if (!board[row][column].isHasBeenMoved()) {
-					board[row][column].setHasBeenMoved(true);
+			
+			boolean validMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
+			boolean castlingIsAllowed = ChessLogic.castlingIsAllowed(board, selectedRow, selectedColumn, row, column);
+			
+			if (validMove || castlingIsAllowed) {
+				
+				if (validMove) {
+					// make the movement
+					board[row][column] = board[selectedRow][selectedColumn];
+					board[selectedRow][selectedColumn] = null;
+					
+					ChessPiece mostRecentlyMovedPiece = board[row][column];
+					
+					// indicates that a chesspiece has been moved once
+					if (!mostRecentlyMovedPiece.isHasBeenMoved()) {
+						mostRecentlyMovedPiece.setHasBeenMoved(true);
+					}
+					// special case 1: promotion
+					if (row == 0 && mostRecentlyMovedPiece.getType() == ChessType.PAWN) {
+						String[] options ={"Knight", "Bishop", "Rook", "Queen"};  
+						String newPiece = options[JOptionPane.showOptionDialog(this, "Which chess piece do you want it to be promoted to?", null, JOptionPane.OK_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, "Queen")];
+						ChessLogic.promotePawn(mostRecentlyMovedPiece, newPiece);
+					}
+					
+					// TODO if after the movement, the player is still being checked by the enemy, then the game ends
+				} else if (castlingIsAllowed) {
+
+				
 				}
-				board[selectedRow][selectedColumn] = null;
+				
+				// check that if the player is checking the opponent
+				if (ChessLogic.checkingEnemy(board, row, column)) {
+					System.out.println("Checked!"); //TODO include it in the special case
+				}
+				
+				// TODO send the request to include all changes
 			}
+			
 			
 		}
 		repaint();
