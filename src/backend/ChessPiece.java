@@ -11,6 +11,7 @@ public class ChessPiece {
 //	MY_KING, MY_QUEEN, MY_KNIGHT, MY_BISHOP, MY_ROOK, MY_PAWN,
 //	ENEMY_KING, ENEMY_QUEEN, ENEMY_KNIGHT, ENEMY_BISHOP, ENEMY_ROOK, ENEMY_PAWN;
 	
+	private boolean hasBeenMoved = false; // check if the chess has been moved.
 	private boolean isEnemy = false; // it can not be controlled by the player if it's an enemy piece
 	private boolean isLight = false;
 	private ChessType type = null;
@@ -99,6 +100,14 @@ public class ChessPiece {
 		this.type = type;
 	}
 
+	public boolean isHasBeenMoved() {
+		return hasBeenMoved;
+	}
+
+	public void setHasBeenMoved(boolean hasBeenMoved) {
+		this.hasBeenMoved = hasBeenMoved;
+	}
+	
 	public enum ChessType {
 		KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN;
 	}

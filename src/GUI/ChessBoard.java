@@ -125,6 +125,9 @@ public class ChessBoard extends JLabel implements MouseListener{
 			// make the movement
 			if (ChessLogic.validateChessPiece(board, selectedRow, selectedColumn, row, column)) {
 				board[row][column] = board[selectedRow][selectedColumn];
+				if (!board[row][column].isHasBeenMoved()) {
+					board[row][column].setHasBeenMoved(true);
+				}
 				board[selectedRow][selectedColumn] = null;
 			}
 			
