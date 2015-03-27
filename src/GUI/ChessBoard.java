@@ -120,11 +120,11 @@ public class ChessBoard extends JLabel implements MouseListener{
 			firstClick = false;
 			chessPieceSelected = false;
 			
-			
+			// validMove and castlingIsAllowed cannot be both true
 			boolean validMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
 			boolean castlingIsAllowed = ChessLogic.castlingIsAllowed(board, selectedRow, selectedColumn, row, column);
 			
-			if (validMove || castlingIsAllowed) {
+			if (validMove || castlingIsAllowed) { 
 				
 				if (validMove) {
 					// make the movement
@@ -145,15 +145,53 @@ public class ChessBoard extends JLabel implements MouseListener{
 					}
 					
 					// TODO if after the movement, the player is still being checked by the enemy, then the game ends
-				} else if (castlingIsAllowed) {
-
-				
+					
+					// TODO maybe move it to below castlingIsAllowed? 
+					// check that if the player is checking the opponent
+					if (ChessLogic.checkingEnemy(board, row, column)) {
+						System.out.println("Checked!"); //TODO include it in the special case
+					}
+					
+				} else if (castlingIsAllowed) { // special case 2: castling
+					
+					// get rook's position
+					int rookColumn = -1;
+					if (selectedColumn == 4) {
+						rookColumn = column;
+					} else {
+						rookColumn = selectedColumn;
+					}
+					
+					ChessPiece king = board[7][4], rook = board[7][rookColumn];
+					
+					
+					// TODO encapsulate it in a method
+					// make the movement
+					if (rookColumn == 0) {
+						board[7][2] = king;
+						board[7][3] = rook;
+						
+						// TODO maybe move it to below castlingIsAllowed? 
+						if (ChessLogic.checkingEnemy(board, 7, 2) || ChessLogic.checkingEnemy(board, 7, 3)) {
+							System.out.println("Checked!"); //TODO include it in the special case
+						}
+					} else if (rookColumn == 7) {
+						board[7][6] = king;
+						board[7][5] = rook;
+						
+						// TODO maybe move it to below castlingIsAllowed? 
+						if (ChessLogic.checkingEnemy(board, 7, 5) || ChessLogic.checkingEnemy(board, 7, 6)) {
+							System.out.println("Checked!"); //TODO include it in the special case
+						}
+					} 
+					board[row][column] = null;
+					board[selectedRow][selectedColumn] = null;
+					
+					king.setHasBeenMoved(true);
+					rook.setHasBeenMoved(true);
 				}
 				
-				// check that if the player is checking the opponent
-				if (ChessLogic.checkingEnemy(board, row, column)) {
-					System.out.println("Checked!"); //TODO include it in the special case
-				}
+				
 				
 				// TODO send the request to include all changes
 			}
