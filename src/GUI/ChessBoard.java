@@ -8,6 +8,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -28,6 +29,10 @@ public class ChessBoard extends JLabel implements MouseListener{
 	
 	private ChessPiece[][] board = null;
 	
+	// for interacting with the opponent
+	private Socket socket = null;
+	private boolean mouseClickEnabled = false;
+	
 	// for chess piece movement
 	private boolean chessPieceSelected = false; // indicates if one of the player's chess pieces is selected
 	private boolean firstClick = true; // for putting a pointer
@@ -37,7 +42,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private ImageIcon chessBoardImage = null;
 	private Image pointerImage = null;
 	
-	public ChessBoard(boolean moveFirst) {
+	public ChessBoard(boolean moveFirst, Socket socket) {
 		super();
 		
 		// initialize chess pieces
@@ -53,6 +58,14 @@ public class ChessBoard extends JLabel implements MouseListener{
 		pointerImage = IOSystem.getScaledImage(
 				ChessBoard.class.getResource(ChessConstants.POINTER), 
 				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH/2);
+		
+		// set up things for battling an opponent
+		this.socket = socket;
+		if (moveFirst) {
+			mouseClickEnabled = true;
+		} else {
+			mouseClickEnabled = false;
+		}
 		
 		// add mouse listener
 		this.addMouseListener(this);
@@ -96,6 +109,8 @@ public class ChessBoard extends JLabel implements MouseListener{
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		if (!mouseClickEnabled) return;
+		
 		int column = (int)((e.getX() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
 		int row = (int)((e.getY() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
 		

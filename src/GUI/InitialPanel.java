@@ -128,37 +128,3 @@ public class InitialPanel extends JPanel{
 	
 	
 }
-
-class WaitingNoticeDialog extends JDialog {
-	public WaitingNoticeDialog (JFrame parent, String title, String message) {
-		super(parent, title);
-//		this.setModal(true);
-		
-		
-		this.setLayout(new BorderLayout());
-		JPanel messagePane = new JPanel();
-		messagePane.add(new JLabel(message));
-		this.add(messagePane, BorderLayout.CENTER);
-		System.out.println(message);
-//		getContentPane().add(messagePane);
-		
-//		Dimension SCREEN_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
-//		//I'd also make this static and final and insert them at the class definition
-//		int dialogWidth = SCREEN_DIMENSION.width / 4; //example; a quarter of the screen size
-//		int dialogHeight = SCREEN_DIMENSION.height / 4; //example
-//		int dialogX = SCREEN_DIMENSION.width / 2 - dialogWidth / 2; //position right in the middle of the screen
-//		int dialogY = SCREEN_DIMENSION.height / 2 - dialogHeight / 2;
-//
-//		this.setBounds(dialogX, dialogY, dialogWidth, dialogHeight);
-		
-		
-		
-		Dimension dim = Toolkit. getDefaultToolkit().getScreenSize();
-		this.setSize(ChessConstants.GAME_INTERFACE_WIDTH, ChessConstants.GAME_INTERFACE_HGIGHT);
-		this.setLocation(dim.width /2-this.getSize().width/2, dim.height/2-this .getSize().height/2);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-//        pack();
-        setVisible(true);
-	}
-
-}

@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.net.Socket;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 
@@ -44,8 +45,13 @@ public class GameInterface extends JFrame{
 	}
 	
 	public void launchChessBoardPanel(boolean moveFirst) {
-		chessBoardPanel.initializePanel(moveFirst);
-		((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.CHESSBOARDPANEL);
+//		if (socket != null) { // TODO
+			chessBoardPanel.initializePanel(moveFirst, socket);
+			((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.CHESSBOARDPANEL);
+//		} else {
+//			JOptionPane.showMessageDialog(this, "TCP socket is not established.");
+//		}
+		
 	}
 	
 	public Socket getSocket() {
