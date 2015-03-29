@@ -224,7 +224,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 						mostRecentlyMovedPiece.setHasBeenMoved();
 					}
 					// special case 1: promotion
-					if (row == 0 && mostRecentlyMovedPiece.getType() == ChessType.PAWN) {
+					if (row == 0 && mostRecentlyMovedPiece.getType() == ChessType.PAWN && !endGame) {
 						String[] options ={"Knight", "Bishop", "Rook", "Queen"};  
 						String newPiece = options[JOptionPane.showOptionDialog(this, "Which chess piece do you want it to be promoted to?", null, JOptionPane.OK_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, "Queen")];
 						ChessLogic.promotePawn(mostRecentlyMovedPiece, newPiece);
