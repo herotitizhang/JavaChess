@@ -115,22 +115,22 @@ public class ChessLogic {
 		if (newPiece.equals("Queen")) {
 			chessPiece.setType(ChessType.QUEEN);
 			chessPiece.setImage(IOSystem.getScaledImage(
-				ChessBoard.class.getResource(ChessConstants.CLASSIC_LIGHT_QUEEN), 
+				ChessBoard.class.getResource((!chessPiece.isLight() ? ChessConstants.CLASSIC_DARK_QUEEN : ChessConstants.CLASSIC_LIGHT_QUEEN)), 
 				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH));
 		} else if (newPiece.equals("Rook")) {
 			chessPiece.setType(ChessType.ROOK);
 			chessPiece.setImage(IOSystem.getScaledImage(
-				ChessBoard.class.getResource(ChessConstants.CLASSIC_LIGHT_ROOK), 
+				ChessBoard.class.getResource((!chessPiece.isLight() ? ChessConstants.CLASSIC_DARK_ROOK : ChessConstants.CLASSIC_LIGHT_ROOK)), 
 				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH));
 		} else if (newPiece.equals("Bishop")) {
 			chessPiece.setType(ChessType.BISHOP);
 			chessPiece.setImage(IOSystem.getScaledImage(
-				ChessBoard.class.getResource(ChessConstants.CLASSIC_LIGHT_BISHOP), 
+				ChessBoard.class.getResource((!chessPiece.isLight() ? ChessConstants.CLASSIC_DARK_BISHOP : ChessConstants.CLASSIC_LIGHT_BISHOP)), 
 				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH));
 		} else if (newPiece.equals("Knight")) {
 			chessPiece.setType(ChessType.KNIGHT);
 			chessPiece.setImage(IOSystem.getScaledImage(
-				ChessBoard.class.getResource(ChessConstants.CLASSIC_LIGHT_KNIGHT), 
+				ChessBoard.class.getResource((!chessPiece.isLight() ? ChessConstants.CLASSIC_DARK_KNIGHT : ChessConstants.CLASSIC_LIGHT_KNIGHT)), 
 				(int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH, (int)ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH));
 		}
 	}

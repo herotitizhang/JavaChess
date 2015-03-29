@@ -20,7 +20,7 @@ public class NetworkCommunicator {
 	 * The socket is null if the connection failed or 
 	 * there is a timeout and the socket is not yet connected
 	 */
-	public static Socket connect (String ipAddress) {
+	public static Socket connect (final String ipAddress) {
 		
 		
 		// start the timer to avoid hanging
@@ -33,7 +33,7 @@ public class NetworkCommunicator {
 		}
 
 		// start making the connection
-		SocketWrapper socketWrapper = new SocketWrapper();
+		final SocketWrapper socketWrapper = new SocketWrapper();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
