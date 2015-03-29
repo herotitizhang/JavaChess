@@ -104,8 +104,8 @@ public class ChessPiece {
 		return hasBeenMoved;
 	}
 
-	public void setHasBeenMoved(boolean hasBeenMoved) {
-		this.hasBeenMoved = hasBeenMoved;
+	public void setHasBeenMoved() {
+		this.hasBeenMoved = true;
 	}
 	
 	public enum ChessType {

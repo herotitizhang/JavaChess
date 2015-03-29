@@ -212,9 +212,43 @@ public class ChessLogic {
 		return true;
 	}
 	
+	// TODO doesn't work
+	public static boolean beingChecked(ChessPiece[][] chessBoard) {
+		int myKingRow = -1, myKingColumn = -1;
+
+		// get the position of my king
+		outerloop:
+		for (int i = 0; i < 7; i++) {
+			for (int j = 0; j < 7; j++) {
+				ChessPiece chessPiece = chessBoard[i][j];
+				if (chessPiece != null && chessPiece.getType() == ChessType.KING && chessPiece.isEnemy()) {
+					myKingRow = i;
+					myKingColumn = j;
+					break outerloop;
+				}
+			}
+		}
+
+		if (myKingRow == -1 || myKingColumn == -1) return false;
+		
+		for (int i = 0; i < 7; i++) {
+			for (int j = 0; j < 7; j++) {
+				if (chessBoard[i][j] != null 
+					&& chessBoard[i][j].isEnemy()  
+					&& validateChessPieceMovement(chessBoard, i, j, myKingRow, myKingColumn)) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+		
+	}
+	
 	public static boolean checkingEnemy(ChessPiece[][] chessBoard, int row, int column) {
 		int enemyKingRow = -1, enemyKingColumn = -1;
 		
+		// get the position of the enemy king
 		outerloop:
 		for (int i = 0; i < 7; i++) {
 			for (int j = 0; j < 7; j++) {

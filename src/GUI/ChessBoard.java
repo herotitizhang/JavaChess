@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -21,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import networkCommunication.DataPackage;
+import networkCommunication.Move;
 import networkCommunication.NetworkCommunicator;
 import Utilities.IOSystem;
 import backend.ChessLogic;
@@ -147,16 +149,6 @@ public class ChessBoard extends JLabel implements MouseListener{
 	public void setSocket(Socket socket) {
 		this.socket = socket;
 	}
-
-//	public boolean isMouseClickEnabled() {
-//		return mouseClickEnabled;
-//	}
-//
-//	public void setMouseClickEnabled(boolean mouseClickEnabled) {
-//		this.mouseClickEnabled = mouseClickEnabled;
-//	}
-	
-	
 	
 	//////////////////////////////////////////
 	//// Methods from MouseListener below ////
@@ -186,7 +178,6 @@ public class ChessBoard extends JLabel implements MouseListener{
 				chessPieceSelected = true;
 			}
 			
-			repaint();
 		} else {
 			if (selectedRow == row && selectedColumn == column) return;
 			
@@ -200,32 +191,35 @@ public class ChessBoard extends JLabel implements MouseListener{
 			
 			// a move is made
 			if (validMove || castlingIsAllowed) { 
+				DataPackage toBeSent = new DataPackage();
 				
 				if (validMove) {
 					// make the movement
 					board[row][column] = board[selectedRow][selectedColumn];
 					board[selectedRow][selectedColumn] = null;
 					
+					Move move = new Move(selectedRow, selectedColumn, row, column);
+					toBeSent.getMoves().add(move);
+					
 					ChessPiece mostRecentlyMovedPiece = board[row][column];
 					
 					// indicates that a chesspiece has been moved once
 					if (!mostRecentlyMovedPiece.isHasBeenMoved()) {
-						mostRecentlyMovedPiece.setHasBeenMoved(true);
+						mostRecentlyMovedPiece.setHasBeenMoved();
 					}
 					// special case 1: promotion
 					if (row == 0 && mostRecentlyMovedPiece.getType() == ChessType.PAWN) {
 						String[] options ={"Knight", "Bishop", "Rook", "Queen"};  
 						String newPiece = options[JOptionPane.showOptionDialog(this, "Which chess piece do you want it to be promoted to?", null, JOptionPane.OK_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, "Queen")];
 						ChessLogic.promotePawn(mostRecentlyMovedPiece, newPiece);
+						
+						// datapackage update
+						move.pawnPromoteTo(newPiece);
 					}
 					
 					// TODO if after the movement, the player is still being checked by the enemy, then the game ends
 					
-					// TODO maybe move it to below castlingIsAllowed? 
-					// check that if the player is checking the opponent
-					if (ChessLogic.checkingEnemy(board, row, column)) {
-						System.out.println("Checked!"); //TODO include it in the special case
-					}
+
 					
 				} else if (castlingIsAllowed) { // special case 2: castling
 					
@@ -239,46 +233,51 @@ public class ChessBoard extends JLabel implements MouseListener{
 					
 					ChessPiece king = board[7][4], rook = board[7][rookColumn];
 					
+					// castling logic begins
 					
-					// TODO encapsulate it in a method
 					// make the movement
 					if (rookColumn == 0) {
-						board[7][2] = king;
+						board[7][2] = king;						
+						toBeSent.getMoves().add(new Move(7, 4, 7, 2));
+
 						board[7][3] = rook;
-						
-						// TODO maybe move it to below castlingIsAllowed? 
-						if (ChessLogic.checkingEnemy(board, 7, 2) || ChessLogic.checkingEnemy(board, 7, 3)) {
-							System.out.println("Checked!"); //TODO include it in the special case
-						}
+						toBeSent.getMoves().add(new Move(7, rookColumn, 7, 3));
+
 					} else if (rookColumn == 7) {
 						board[7][6] = king;
+						toBeSent.getMoves().add(new Move(7, 4, 7, 6));
+
 						board[7][5] = rook;
-						
-						// TODO maybe move it to below castlingIsAllowed? 
-						if (ChessLogic.checkingEnemy(board, 7, 5) || ChessLogic.checkingEnemy(board, 7, 6)) {
-							System.out.println("Checked!"); //TODO include it in the special case
-						}
+						toBeSent.getMoves().add(new Move(7, rookColumn, 7, 5));
+
 					} 
 					board[row][column] = null;
 					board[selectedRow][selectedColumn] = null;
 					
-					king.setHasBeenMoved(true);
-					rook.setHasBeenMoved(true);
+					king.setHasBeenMoved();
+					rook.setHasBeenMoved();
 				}
 				
-				// TODO send the request to include all changes
-				// add the changes to the dataPackage
-				// send the changes to datapackage.
-				moveOpponentPieceTask.setMouseClickEnabled(false);
-				NetworkCommunicator.sendDataPackage(socket, new DataPackage());
-				// send dataPackage.
+				// datapackage update
+				for (Move move: toBeSent.getMoves()) {
+					if (ChessLogic.checkingEnemy(board, move.getToRow(), move.getToColumn())) {
+						move.setCheckingEnemy(); 
+					}
+				}
 				
-				repaint();
+				NetworkCommunicator.sendDataPackage(socket, toBeSent);
+				moveOpponentPieceTask.setMouseClickEnabled(false);
+				
+				// TODO doesn't work.
+				if (ChessLogic.beingChecked(board)) {
+					JOptionPane.showMessageDialog(this, "You are being checked!");
+				}
 
 			}
 			
-			
 		}
+		
+		repaint();	
 
 	}
 	
@@ -319,15 +318,11 @@ class MoveOpponentPieceTask implements Runnable {
 	
 	private ChessBoard cb = null;
 	private boolean mouseClickEnabled = false;
-	
-	private boolean flip = true;
-	ChessPiece temp = null;
+	private boolean beingChecked = false;
 	
 	public MoveOpponentPieceTask(ChessBoard cb, boolean moveFirst) {
 		this.cb = cb;
 		mouseClickEnabled = moveFirst;
-		
-		temp = cb.getBoard()[7][7];
 	}
 	
 	@Override
@@ -337,14 +332,21 @@ class MoveOpponentPieceTask implements Runnable {
 			if (!mouseClickEnabled) {
 				updateChessBoardBasedOnResponse(NetworkCommunicator.receiveDataPackage(cb.getSocket()));
 				mouseClickEnabled = true;
-				System.out.println("Enabled");
 				cb.repaint();
+				
+				// leave the code here so that pawn can be promoted before the message is shown
+				if (beingChecked) {
+					JOptionPane.showMessageDialog(cb, "You are being checked!");
+					beingChecked = false;
+				}
+
 			}
 			
-			// TODO Don't know why....
+			// TODO 
 			// if the following code appears right after cb.repaint() above instead of 
 			// where it is now, then after the player who uses the dark pieces makes 
 			// the first move, the interface becomes unresponsive.
+			// Can't figure out why....
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -357,12 +359,35 @@ class MoveOpponentPieceTask implements Runnable {
 
 	// modify the board variable
 	private void updateChessBoardBasedOnResponse(DataPackage response) {
-		if (flip) {
-			cb.getBoard()[7][7] = null;
-		} else {
-			cb.getBoard()[7][7] = temp;
+
+		System.out.println(response.getMoves().size());
+		
+		for (Move move: response.getMoves()) {
+			
+			// make the movement
+			cb.getBoard()[7-move.getToRow()][7-move.getToColumn()] =
+					cb.getBoard()[7-move.getFromRow()][7-move.getFromColumn()];
+			cb.getBoard()[7-move.getFromRow()][7-move.getFromColumn()] = null;
+			
+			ChessPiece enemyPiece = cb.getBoard()[7-move.getToRow()][7-move.getToColumn()];
+
+			
+			// set hasBeenMoved to true
+			if (!enemyPiece.isHasBeenMoved()) {
+				enemyPiece.setHasBeenMoved();
+			}
+			
+			// promote the pawn
+			if (move.getPawnPromoteType() != null) {
+				ChessLogic.promotePawn(enemyPiece, move.getPawnPromoteType());
+			}
+			
+			// is being checked
+			if (move.isCheckingEnemy() && !beingChecked) {
+				beingChecked = true;
+			}
 		}
-		flip = !flip;
+		
 	}
 	
 	public boolean isMouseClickEnabled() {
