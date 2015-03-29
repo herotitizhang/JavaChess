@@ -8,6 +8,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,7 +18,10 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
+import networkCommunication.DataPackage;
+import networkCommunication.NetworkCommunicator;
 import Utilities.IOSystem;
 import backend.ChessLogic;
 import backend.ChessPiece;
@@ -27,11 +32,12 @@ import backend.ChessPiece.ChessType;
  */
 public class ChessBoard extends JLabel implements MouseListener{
 	
+	// TODO change to private. public is only for testing
 	private ChessPiece[][] board = null;
 	
 	// for interacting with the opponent
 	private Socket socket = null;
-	private boolean mouseClickEnabled = false;
+	private MoveOpponentPieceTask moveOpponentPieceTask = null;
 	
 	// for chess piece movement
 	private boolean chessPieceSelected = false; // indicates if one of the player's chess pieces is selected
@@ -61,21 +67,49 @@ public class ChessBoard extends JLabel implements MouseListener{
 		
 		// set up things for battling an opponent
 		this.socket = socket;
-		if (moveFirst) {
-			mouseClickEnabled = true;
-		} else {
-			mouseClickEnabled = false;
-		}
 		
 		// add mouse listener
 		this.addMouseListener(this);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		moveOpponentPieceTask = new MoveOpponentPieceTask(this, moveFirst);
+		new Thread(moveOpponentPieceTask).start();
+
+		
+		// wait for the opponent to move first
+//		if (!moveFirst) {
+//			DataPackage response = null;
+//			while (true) {
+//				try {
+//					if (socket.getInputStream().available() > 0) {
+//						InputStream is = socket.getInputStream();
+//						byte[] firstMove = new byte[is.available()];
+//						is.read(firstMove);
+//						response = (DataPackage) IOSystem.getObject(firstMove);
+//						break;
+//					}
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			updateChessBoardBasedOnResponse(response);
+//			repaint();
+//		}
+		
 	}
 	
 	// invoked when repaint() is called
 	@Override
 	public void paintComponent(Graphics graphics) {
-		super.paintComponent(graphics); // draw the chess board
 		
+		super.paintComponent(graphics); // draw the chess board
 		
 		// draw the chess pieces
 		for (int row = 0; row < 8; row++) {
@@ -102,6 +136,27 @@ public class ChessBoard extends JLabel implements MouseListener{
 		
 	}
 	
+	public ChessPiece[][] getBoard() {
+		return board;
+	}
+	
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+	}
+
+//	public boolean isMouseClickEnabled() {
+//		return mouseClickEnabled;
+//	}
+//
+//	public void setMouseClickEnabled(boolean mouseClickEnabled) {
+//		this.mouseClickEnabled = mouseClickEnabled;
+//	}
+	
+	
 	
 	//////////////////////////////////////////
 	//// Methods from MouseListener below ////
@@ -109,7 +164,8 @@ public class ChessBoard extends JLabel implements MouseListener{
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (!mouseClickEnabled) return;
+		
+		if (!moveOpponentPieceTask.isMouseClickEnabled()) return;
 		
 		int column = (int)((e.getX() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
 		int row = (int)((e.getY() - ChessConstants.CLASSIC_CHESSBOARD_MARGIN) / ChessConstants.CLASSIC_CHESSBOARD_GRID_WIDTH);
@@ -129,6 +185,8 @@ public class ChessBoard extends JLabel implements MouseListener{
 			if (board[row][column] != null && !board[row][column].isEnemy()) {
 				chessPieceSelected = true;
 			}
+			
+			repaint();
 		} else {
 			if (selectedRow == row && selectedColumn == column) return;
 			
@@ -139,6 +197,8 @@ public class ChessBoard extends JLabel implements MouseListener{
 			boolean validMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
 			boolean castlingIsAllowed = ChessLogic.castlingIsAllowed(board, selectedRow, selectedColumn, row, column);
 			
+			
+			// a move is made
 			if (validMove || castlingIsAllowed) { 
 				
 				if (validMove) {
@@ -206,17 +266,22 @@ public class ChessBoard extends JLabel implements MouseListener{
 					rook.setHasBeenMoved(true);
 				}
 				
-				
-				
 				// TODO send the request to include all changes
+				// add the changes to the dataPackage
+				// send the changes to datapackage.
+				moveOpponentPieceTask.setMouseClickEnabled(false);
+				NetworkCommunicator.sendDataPackage(socket, new DataPackage());
+				// send dataPackage.
+				
+				repaint();
+
 			}
 			
 			
 		}
-		repaint();
 
 	}
-
+	
 	@Override
 	public void mousePressed(MouseEvent e) {
 		
@@ -236,7 +301,75 @@ public class ChessBoard extends JLabel implements MouseListener{
 	public void mouseExited(MouseEvent e) {
 		
 	}
+
+}
+
+
+// Why we need this class: we need to launch another thread in
+// ChessBoard's constructor that updates the GUI upon receiving 
+// messages from the opponent. Calling recall() in ChessBoard's
+// mouseClicked() does not update the GUI immediately, so we do
+// it in a separate thread, and that thread should be created 
+// and started in the constructor instead of in any other method
+// like paintComponent()
+
+// Also refer to the commment of repaint() - the lightweight/
+// heavy weight part
+class MoveOpponentPieceTask implements Runnable {
 	
+	private ChessBoard cb = null;
+	private boolean mouseClickEnabled = false;
 	
+	private boolean flip = true;
+	ChessPiece temp = null;
 	
+	public MoveOpponentPieceTask(ChessBoard cb, boolean moveFirst) {
+		this.cb = cb;
+		mouseClickEnabled = moveFirst;
+		
+		temp = cb.getBoard()[7][7];
+	}
+	
+	@Override
+	public void run() {
+		
+		while (true) {
+			if (!mouseClickEnabled) {
+				updateChessBoardBasedOnResponse(NetworkCommunicator.receiveDataPackage(cb.getSocket()));
+				mouseClickEnabled = true;
+				System.out.println("Enabled");
+				cb.repaint();
+			}
+			
+			// TODO Don't know why....
+			// if the following code appears right after cb.repaint() above instead of 
+			// where it is now, then after the player who uses the dark pieces makes 
+			// the first move, the interface becomes unresponsive.
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		
+	}
+
+	// modify the board variable
+	private void updateChessBoardBasedOnResponse(DataPackage response) {
+		if (flip) {
+			cb.getBoard()[7][7] = null;
+		} else {
+			cb.getBoard()[7][7] = temp;
+		}
+		flip = !flip;
+	}
+	
+	public boolean isMouseClickEnabled() {
+		return mouseClickEnabled;
+	}
+
+	public void setMouseClickEnabled(boolean mouseClickEnabled) {
+		this.mouseClickEnabled = mouseClickEnabled;
+	}
 }

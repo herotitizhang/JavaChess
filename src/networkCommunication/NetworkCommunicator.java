@@ -1,11 +1,13 @@
 package networkCommunication;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 import Utilities.CountDownTimer;
+import Utilities.IOSystem;
 
 public class NetworkCommunicator {
 
@@ -86,7 +88,40 @@ public class NetworkCommunicator {
 		return socket;
 	}
 	
+	public static void sendDataPackage(Socket socket, DataPackage dataPackage) {
+		if (socket == null || dataPackage == null) return;
+		
+		byte[] info = IOSystem.getByteArray(dataPackage);
+		try {
+			socket.getOutputStream().write(info);
+			socket.getOutputStream().flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	
+	public static DataPackage receiveDataPackage(Socket socket) {
+		DataPackage toBeReturned = null;
+		while (true) {
+			try {
+				if (socket.getInputStream().available() > 0) {
+					InputStream is = socket.getInputStream();
+					byte[] response = new byte[is.available()];
+					is.read(response);
+					toBeReturned = (DataPackage) IOSystem.getObject(response);
+					break;
+				}
+
+				Thread.sleep(100);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		return toBeReturned;
+	}
 	
 	/*
 	

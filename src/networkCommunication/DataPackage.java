@@ -1,5 +1,7 @@
 package networkCommunication;
 
-public class DataPackage {
+import java.io.Serializable;
+
+public class DataPackage implements Serializable {
 
 }
