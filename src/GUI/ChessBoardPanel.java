@@ -9,11 +9,11 @@ public class ChessBoardPanel extends JPanel{
 	
 	private ChessBoard chessBoard;
 	
-	public void initializePanel(boolean moveFirst, Socket socket) {
+	public void initializePanel(GameInterface topFrame, boolean moveFirst, Socket socket) {
 		// switch to a chessboard TODO to be moved to somewhere else
 		
 		// set the layout
-		chessBoard = new ChessBoard(moveFirst, socket);
+		chessBoard = new ChessBoard(topFrame, moveFirst, socket);
 //		this.setLayout(new BorderLayout());
 		this.add(chessBoard);
 		

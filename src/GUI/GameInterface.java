@@ -3,11 +3,14 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import Utilities.IOSystem;
 
 
 public class GameInterface extends JFrame{
@@ -45,13 +48,8 @@ public class GameInterface extends JFrame{
 	}
 	
 	public void launchChessBoardPanel(boolean moveFirst) {
-//		if (socket != null) { // TODO
-			chessBoardPanel.initializePanel(moveFirst, socket);
-			((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.CHESSBOARDPANEL);
-//		} else {
-//			JOptionPane.showMessageDialog(this, "TCP socket is not established.");
-//		}
-		
+		chessBoardPanel.initializePanel(this, moveFirst, socket);
+		((CardLayout)mainPanel.getLayout()).show(mainPanel, ChessConstants.CHESSBOARDPANEL);
 	}
 	
 	public Socket getSocket() {

@@ -105,6 +105,9 @@ public class NetworkCommunicator {
 		DataPackage toBeReturned = null;
 		while (true) {
 			try {
+				Thread.sleep(100);
+				if (socket == null) continue;
+				
 				if (socket.getInputStream().available() > 0) {
 					InputStream is = socket.getInputStream();
 					byte[] response = new byte[is.available()];
@@ -113,7 +116,7 @@ public class NetworkCommunicator {
 					break;
 				}
 
-				Thread.sleep(100);
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {

@@ -33,6 +33,8 @@ import backend.ChessPiece.ChessType;
  * TODO ChessBoard should only be in charge of UI, sound effect, etc.
  */
 public class ChessBoard extends JLabel implements MouseListener{
+
+	private GameInterface topFrame = null;
 	
 	// TODO change to private. public is only for testing
 	private ChessPiece[][] board = null;
@@ -50,8 +52,10 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private ImageIcon chessBoardImage = null;
 	private Image pointerImage = null;
 	
-	public ChessBoard(boolean moveFirst, Socket socket) {
+	public ChessBoard(GameInterface topFrame, boolean moveFirst, Socket socket) {
 		super();
+		
+		this.topFrame = topFrame;
 		
 		// initialize chess pieces
 		board = ChessLogic.initializePieces(moveFirst); 
@@ -142,6 +146,10 @@ public class ChessBoard extends JLabel implements MouseListener{
 		return board;
 	}
 	
+	public GameInterface getTopFrame() {
+		return topFrame;
+	}
+	
 	public Socket getSocket() {
 		return socket;
 	}
@@ -184,6 +192,8 @@ public class ChessBoard extends JLabel implements MouseListener{
 			firstClick = false;
 			chessPieceSelected = false;
 			
+			boolean endGame = false;
+			
 			// validMove and castlingIsAllowed cannot be both true
 			boolean validMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
 			boolean castlingIsAllowed = ChessLogic.castlingIsAllowed(board, selectedRow, selectedColumn, row, column);
@@ -192,6 +202,12 @@ public class ChessBoard extends JLabel implements MouseListener{
 			// a move is made
 			if (validMove || castlingIsAllowed) { 
 				DataPackage toBeSent = new DataPackage();
+				
+				if (board[row][column] != null && board[row][column].isEnemy()
+						&& board[row][column].getType() == ChessType.KING) {
+						JOptionPane.showMessageDialog(this, "You won!"); 
+						endGame = true;
+				}
 				
 				if (validMove) {
 					// make the movement
@@ -272,6 +288,10 @@ public class ChessBoard extends JLabel implements MouseListener{
 				if (ChessLogic.beingChecked(board)) {
 					JOptionPane.showMessageDialog(this, "You are being checked!");
 				}
+				
+				if (endGame) {
+					System.exit(0);
+				}
 
 			}
 			
@@ -339,7 +359,7 @@ class MoveOpponentPieceTask implements Runnable {
 					JOptionPane.showMessageDialog(cb, "You are being checked!");
 					beingChecked = false;
 				}
-
+				
 			}
 			
 			// TODO 
@@ -363,6 +383,12 @@ class MoveOpponentPieceTask implements Runnable {
 		System.out.println(response.getMoves().size());
 		
 		for (Move move: response.getMoves()) {
+			
+			if (cb.getBoard()[7-move.getToRow()][7-move.getToColumn()] != null 
+				&& cb.getBoard()[7-move.getToRow()][7-move.getToColumn()].getType() == ChessType.KING) {
+				JOptionPane.showMessageDialog(cb, "You lost!"); 
+				System.exit(0);
+			}
 			
 			// make the movement
 			cb.getBoard()[7-move.getToRow()][7-move.getToColumn()] =
