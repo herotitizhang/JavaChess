@@ -1,0 +1,68 @@
+<?xml version ="1.0" encoding="UTF-8" ?>
+<project name="SpringChess" default="run" basedir=".">
+	<property name="src" value="src"/>
+	<property name="dest" value="bin"/>
+	<property name="libs" value="external_libs"/>
+	<!-- this folder contains the jar file -->
+	<property name="output" value="output"/>
+	<property environment="env"/>
+	
+	<!-- for including the external jar (1st) -->
+	<path id="classpath">
+		<fileset dir="${libs}">
+			<include name="**/*" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${dest}"/>
+		<mkdir dir="${output}"/>
+	</target>
+
+	<target name="compile" depends="init">
+		<echo>Start compiling...</echo>
+		
+		<!-- for including the external jar (2nd: classpathref attribute) -->
+		<javac srcdir="${src}" destdir="${dest}" classpathref="classpath" includeAntRuntime="false"/>
+		<echo>Finish compiling!</echo>
+	</target>
+
+	<target name="build" depends="compile">
+		<echo>Start generating the jar file...</echo>
+		
+		<copy todir="${dest}/resources">
+			<fileset dir="${src}/resources">
+				<include name="*.png" />
+			</fileset>
+		</copy>
+		
+		<jar basedir="${dest}" jarfile="${output}/SpringChess.jar">
+			<manifest>
+				<attribute name="Main-Class" value="GUI.GameInterface"/>
+			</manifest>
+			
+			<!-- for including the external jar (3rd) -->
+			<zipgroupfileset dir="${libs}" includes="*.jar"/>
+		</jar>
+		<echo>The jar file has been generated</echo>
+	</target>
+
+	<target name="run" depends="build">
+		<java classname="GUI.GameInterface" fork="yes" classpath="${output}/SpringChess.jar"/>
+	</target>
+
+	<!-- remove both jar file and class files -->
+	<target name="clean">
+		<echo>Start cleaning...</echo>
+		<delete includeEmptyDirs="true">
+			<fileset dir="${dest}">
+				<include name="**/*" />
+			</fileset>
+			<fileset dir="${output}">
+				<include name="*.jar"/>
+			</fileset>
+		</delete>
+		<echo>Finishing cleaning...</echo>
+	</target>
+
+</project>
