@@ -146,8 +146,11 @@ public class ChessLogic {
 			allowedEnPassantMove.translateToEnemyCoordinates();
 			if (startRow == allowedEnPassantMove.getFromRow() && startColumn == allowedEnPassantMove.getFromColumn()
 				&& toRow == allowedEnPassantMove.getToRow() && toColumn == allowedEnPassantMove.getToColumn() ) {
+				allowedEnPassantMove.translateToEnemyCoordinates(); // translate back
 				return allowedEnPassantMove;
 			}
+			allowedEnPassantMove.translateToEnemyCoordinates(); // translate back
+
 		}
 		
 		return null;

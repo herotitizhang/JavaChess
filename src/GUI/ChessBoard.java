@@ -281,17 +281,26 @@ public class ChessBoard extends JLabel implements MouseListener{
 					board[row][column] = null;
 					board[selectedRow][selectedColumn] = null;
 					
+					// indicates that the 2 chesspieces have been moved
 					king.setHasBeenMoved();
 					rook.setHasBeenMoved();
 				} else if (enPassantMove != null) {
-					
-					System.out.println("Yahoooooooo!!!!!!!!!");
-					System.out.println("you can do "+allowedEnPassantMoves.size()+" moves");
 
+					// make the move
+					board[row][column] = board[selectedRow][selectedColumn];
+					board[selectedRow][selectedColumn] = null;
+					toBeSent.getMoves().add(new Move(selectedRow, selectedColumn, row, column));
+
+					// take out the pawn
+					enPassantMove.translateToEnemyCoordinates();
+					board[enPassantMove.getTakenPieceRow()][enPassantMove.getTakenPieceColumn()] = null;
+					toBeSent.setEnPassantPawnRow(enPassantMove.getTakenPieceRow());
+					toBeSent.setEnPassantPawnColumn(enPassantMove.getTakenPieceColumn());
 					
-					
-					allowedEnPassantMoves = null;
 				}
+				
+				// special case 2: En Passant pawns
+				allowedEnPassantMoves = null; // now available next term
 				
 				// datapackage update
 				for (Move move: toBeSent.getMoves()) {
@@ -399,6 +408,7 @@ class MoveOpponentPieceTask implements Runnable {
 	// modify the board variable
 	private void updateChessBoardBasedOnResponse(DataPackage response) {
 
+		// normal moves
 		for (Move move: response.getMoves()) {
 			
 			if (cb.getBoard()[7-move.getToRow()][7-move.getToColumn()] != null 
@@ -431,9 +441,16 @@ class MoveOpponentPieceTask implements Runnable {
 			}
 		}
 		
+		// tell the player which En Passant moves are allowed
 		if (response.getEnPassantMoves().size() > 0) {
 			cb.setAllowedEnPassantMoves(response.getEnPassantMoves());
 		}
+		
+		// take out the pawn en passant
+		if (response.getEnPassantPawnRow() != -1 && response.getEnPassantPawnColumn() != -1) {
+			cb.getBoard()[7-response.getEnPassantPawnRow()][7-response.getEnPassantPawnColumn()] = null;
+		}
+		
 		
 	}
 	
