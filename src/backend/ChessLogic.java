@@ -1,5 +1,8 @@
 package backend;
 
+import java.util.ArrayList;
+
+import networkCommunication.EnPassantMove;
 import GUI.ChessBoard;
 import GUI.ChessConstants;
 import Utilities.IOSystem;
@@ -135,7 +138,22 @@ public class ChessLogic {
 		}
 	}
 	
-	public static boolean castlingIsAllowed(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
+	// assume all moves are from opponent's point of view (so we need to translate the coordinates)
+	public static EnPassantMove getEnPassantMove (ArrayList<EnPassantMove> allowedEnPassantMoves, int startRow, int startColumn, int toRow, int toColumn) {
+		if (allowedEnPassantMoves == null) return null;
+		
+		for (EnPassantMove allowedEnPassantMove: allowedEnPassantMoves) {
+			allowedEnPassantMove.translateToEnemyCoordinates();
+			if (startRow == allowedEnPassantMove.getFromRow() && startColumn == allowedEnPassantMove.getFromColumn()
+				&& toRow == allowedEnPassantMove.getToRow() && toColumn == allowedEnPassantMove.getToColumn() ) {
+				return allowedEnPassantMove;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static boolean isCastlingMove(ChessPiece[][] chessBoard, int startRow, int startColumn, int toRow, int toColumn) {
 		ChessPiece startPiece = chessBoard[startRow][startColumn];
 		ChessPiece destinationPiece = chessBoard[toRow][toColumn];
 		int kingRow = -1, kingColumn = -1;

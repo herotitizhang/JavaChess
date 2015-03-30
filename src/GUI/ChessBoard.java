@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import networkCommunication.DataPackage;
+import networkCommunication.EnPassantMove;
 import networkCommunication.Move;
 import networkCommunication.NetworkCommunicator;
 import Utilities.IOSystem;
@@ -47,6 +48,10 @@ public class ChessBoard extends JLabel implements MouseListener{
 	private boolean chessPieceSelected = false; // indicates if one of the player's chess pieces is selected
 	private boolean firstClick = true; // for putting a pointer
 	private int selectedRow = -1, selectedColumn = -1;
+	
+	// for special case 2. check if the user can make an en passant capture. if so, get the possible moves from allowedEnPassantMoves variable
+//	private boolean enPassantEnabled = false; // indicates if en passant of the user's pawn is made available 
+	private ArrayList<EnPassantMove> allowedEnPassantMoves = null;
 	
 	// put the following in the memory to avoid disk access
 	private ImageIcon chessBoardImage = null;
@@ -75,40 +80,12 @@ public class ChessBoard extends JLabel implements MouseListener{
 		this.socket = socket;
 		
 		// add mouse listener
-		this.addMouseListener(this);
+		this.addMouseListener(this);	
 		
-		
-		
-		
-		
-		
-		
-		
-		
+		// get response from the opponent
 		moveOpponentPieceTask = new MoveOpponentPieceTask(this, moveFirst);
 		new Thread(moveOpponentPieceTask).start();
 
-		
-		// wait for the opponent to move first
-//		if (!moveFirst) {
-//			DataPackage response = null;
-//			while (true) {
-//				try {
-//					if (socket.getInputStream().available() > 0) {
-//						InputStream is = socket.getInputStream();
-//						byte[] firstMove = new byte[is.available()];
-//						is.read(firstMove);
-//						response = (DataPackage) IOSystem.getObject(firstMove);
-//						break;
-//					}
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			updateChessBoardBasedOnResponse(response);
-//			repaint();
-//		}
-		
 	}
 	
 	// invoked when repaint() is called
@@ -158,6 +135,15 @@ public class ChessBoard extends JLabel implements MouseListener{
 		this.socket = socket;
 	}
 	
+//	public void enableEnPassant() {
+//		this.enPassantEnabled = true;
+//	}
+	
+	public void setAllowedEnPassantMoves(
+			ArrayList<EnPassantMove> allowedEnPassantMoves) {
+		this.allowedEnPassantMoves = allowedEnPassantMoves;
+	}
+	
 	//////////////////////////////////////////
 	//// Methods from MouseListener below ////
 	//////////////////////////////////////////
@@ -194,13 +180,13 @@ public class ChessBoard extends JLabel implements MouseListener{
 			
 			boolean endGame = false;
 			
-			// validMove and castlingIsAllowed cannot be both true
-			boolean validMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
-			boolean castlingIsAllowed = ChessLogic.castlingIsAllowed(board, selectedRow, selectedColumn, row, column);
-			
+			// one of the three mutually exclusive conditions below is true
+			boolean isNormalMove = ChessLogic.validateChessPieceMovement(board, selectedRow, selectedColumn, row, column);
+			boolean isCastlingMove = ChessLogic.isCastlingMove(board, selectedRow, selectedColumn, row, column);
+			EnPassantMove enPassantMove = ChessLogic.getEnPassantMove(allowedEnPassantMoves, selectedRow, selectedColumn, row, column);
 			
 			// a move is made
-			if (validMove || castlingIsAllowed) { 
+			if (isNormalMove || isCastlingMove || enPassantMove != null) { 
 				DataPackage toBeSent = new DataPackage();
 				
 				if (board[row][column] != null && board[row][column].isEnemy()
@@ -209,7 +195,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 						endGame = true;
 				}
 				
-				if (validMove) {
+				if (isNormalMove) {
 					// make the movement
 					board[row][column] = board[selectedRow][selectedColumn];
 					board[selectedRow][selectedColumn] = null;
@@ -221,8 +207,31 @@ public class ChessBoard extends JLabel implements MouseListener{
 					
 					// indicates that a chesspiece has been moved once
 					if (!mostRecentlyMovedPiece.isHasBeenMoved()) {
+						
+						// special case 2: en passant
+						// tell the opponent that that can make the following en passant captures
+						if (mostRecentlyMovedPiece.getType() == ChessType.PAWN && row == 4) {
+							if (column == 0) {
+								if (board[row][1] != null && board[row][1].isEnemy() && board[row][1].getType() == ChessType.PAWN) {
+									toBeSent.getEnPassantMoves().add(new EnPassantMove(row, 1, 5, 0, row, column));
+								}
+							} else if (column == 7) {
+								if (board[row][6] != null && board[row][6].isEnemy() && board[row][6].getType() == ChessType.PAWN) {
+									toBeSent.getEnPassantMoves().add(new EnPassantMove(row, 6, 5, 7, row, column));
+								}
+							} else {
+								if (board[row][column+1] != null && board[row][column+1].isEnemy() && board[row][column+1].getType() == ChessType.PAWN) {
+									toBeSent.getEnPassantMoves().add(new EnPassantMove(row, column+1, 5, column, row, column));
+								}
+								if (board[row][column-1] != null && board[row][column-1].isEnemy() && board[row][column-1].getType() == ChessType.PAWN) {
+									toBeSent.getEnPassantMoves().add(new EnPassantMove(row, column-1, 5, column, row, column));
+								}
+							}
+						}
+						
 						mostRecentlyMovedPiece.setHasBeenMoved();
 					}
+					
 					// special case 1: promotion
 					if (row == 0 && mostRecentlyMovedPiece.getType() == ChessType.PAWN && !endGame) {
 						String[] options ={"Knight", "Bishop", "Rook", "Queen"};  
@@ -233,11 +242,13 @@ public class ChessBoard extends JLabel implements MouseListener{
 						move.pawnPromoteTo(newPiece);
 					}
 					
+					
+					
 					// TODO if after the movement, the player is still being checked by the enemy, then the game ends
 					
 
 					
-				} else if (castlingIsAllowed) { // special case 2: castling
+				} else if (isCastlingMove) { // special case 2: castling
 					
 					// get rook's position
 					int rookColumn = -1;
@@ -272,6 +283,14 @@ public class ChessBoard extends JLabel implements MouseListener{
 					
 					king.setHasBeenMoved();
 					rook.setHasBeenMoved();
+				} else if (enPassantMove != null) {
+					
+					System.out.println("Yahoooooooo!!!!!!!!!");
+					System.out.println("you can do "+allowedEnPassantMoves.size()+" moves");
+
+					
+					
+					allowedEnPassantMoves = null;
 				}
 				
 				// datapackage update
@@ -284,7 +303,7 @@ public class ChessBoard extends JLabel implements MouseListener{
 				NetworkCommunicator.sendDataPackage(socket, toBeSent);
 				moveOpponentPieceTask.setMouseClickEnabled(false);
 				
-				// TODO doesn't work.
+				// TODO doesn't work. I want the notice to pop up immediately after a user makes the move 
 				if (ChessLogic.beingChecked(board)) {
 					JOptionPane.showMessageDialog(this, "You are being checked!");
 				}
@@ -380,8 +399,6 @@ class MoveOpponentPieceTask implements Runnable {
 	// modify the board variable
 	private void updateChessBoardBasedOnResponse(DataPackage response) {
 
-		System.out.println(response.getMoves().size());
-		
 		for (Move move: response.getMoves()) {
 			
 			if (cb.getBoard()[7-move.getToRow()][7-move.getToColumn()] != null 
@@ -412,6 +429,10 @@ class MoveOpponentPieceTask implements Runnable {
 			if (move.isCheckingEnemy() && !beingChecked) {
 				beingChecked = true;
 			}
+		}
+		
+		if (response.getEnPassantMoves().size() > 0) {
+			cb.setAllowedEnPassantMoves(response.getEnPassantMoves());
 		}
 		
 	}
